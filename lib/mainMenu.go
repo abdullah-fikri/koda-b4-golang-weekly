@@ -14,6 +14,7 @@ func MainMenu() {
 	var input string
 	cart := []cartItem{}
 	history := []cartItem{}
+	temps := []temp{}
 	for {
 		fmt.Println("\n\n--- GACOAN DELIVERY ---")
 		fmt.Println(`
@@ -28,9 +29,9 @@ func MainMenu() {
 
 		switch input {
 		case "1":
-			Menu(&cart)
+			Menu(&cart, &temps)
 		case "2":
-			Cart(&cart, &history)
+			Cart(&cart, &history, &temps)
 		case "3":
 			History(&history)
 		case "4":
