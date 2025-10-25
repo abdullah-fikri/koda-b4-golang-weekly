@@ -4,16 +4,16 @@ import (
 	"fmt"
 )
 
-func MainMenu() {
+func (c *CartItem) MainMenu() {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Print(r)
-			MainMenu()
+			c.MainMenu()
 		}
 	}()
 	var input string
-	cart := []cartItem{}
-	history := []cartItem{}
+	cart := []CartItem{}
+	history := []CartItem{}
 	temps := []temp{}
 	for {
 		fmt.Println("\n\n--- GACOAN DELIVERY ---")
@@ -29,9 +29,9 @@ func MainMenu() {
 
 		switch input {
 		case "1":
-			Menu(&cart, &temps)
+			c.Menu(&cart, &temps)
 		case "2":
-			Cart(&cart, &history, &temps)
+			c.Cart(&cart, &history, &temps)
 		case "3":
 			History(&history)
 		case "4":

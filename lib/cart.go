@@ -10,7 +10,13 @@ import (
 	"github.com/paimanbandi/rupiah"
 )
 
-func Cart(cart *[]cartItem, history *[]cartItem, temps *[]temp) {
+type CartInterface interface {
+	Cart(cart *[]CartItem, history *[]CartItem, temps *[]temp)
+	Menu(cart *[]CartItem, temps *[]temp)
+	MainMenu()
+}
+
+func (c *CartItem) Cart(cart *[]CartItem, history *[]CartItem, temps *[]temp) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(r)
@@ -47,7 +53,7 @@ func Cart(cart *[]cartItem, history *[]cartItem, temps *[]temp) {
 		_, _ = reader.ReadString('\n')
 
 		for _, t := range *temps {
-			*cart = append(*cart, cartItem{
+			*cart = append(*cart, CartItem{
 				name:         t.name,
 				price:        t.price,
 				qty:          t.qty,
@@ -59,7 +65,7 @@ func Cart(cart *[]cartItem, history *[]cartItem, temps *[]temp) {
 		*temps = []temp{}
 
 		*history = append(*history, *cart...)
-		*cart = []cartItem{}
+		*cart = []CartItem{}
 	case "n":
 		fmt.Print("Kembali ke menu utama...")
 	default:

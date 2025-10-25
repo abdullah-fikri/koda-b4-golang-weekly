@@ -3,5 +3,6 @@ package main
 import "golang-weekly/lib"
 
 func main() {
-	lib.MainMenu()
+	var c *lib.CartItem
+	c.MainMenu()
 }

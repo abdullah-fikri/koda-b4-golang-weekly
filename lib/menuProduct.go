@@ -15,7 +15,7 @@ type foods struct {
 	price int
 }
 
-type cartItem struct {
+type CartItem struct {
 	name         string
 	price        int
 	qty          int
@@ -31,7 +31,7 @@ type temp struct {
 	total int
 }
 
-func Menu(cart *[]cartItem, temps *[]temp) {
+func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(r)
@@ -96,7 +96,7 @@ func Menu(cart *[]cartItem, temps *[]temp) {
 	text = strings.TrimSpace(text)
 	switch text {
 	case "1":
-		Menu(cart, temps)
+		c.Menu(cart, temps)
 	default:
 		panic("Opsi yang anda masukkan tidak sesuai")
 	}

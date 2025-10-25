@@ -8,7 +8,7 @@ import (
 	"github.com/paimanbandi/rupiah"
 )
 
-func History(history *[]cartItem) {
+func History(history *[]CartItem) {
 	var point []int
 	if len(*history) == 0 {
 		fmt.Print("\n\nBelum ada riwayat pembelian. \n\nPress enter to back...")
