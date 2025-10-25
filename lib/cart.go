@@ -63,7 +63,6 @@ func Cart(cart *[]cartItem, history *[]cartItem, temps *[]temp) {
 	case "n":
 		fmt.Print("Kembali ke menu utama...")
 	default:
-		fmt.Println("Pilihan tidak valid")
-		Cart(cart, history, temps)
+		panic("Opsi yang anda masukkan tidak valid")
 	}
 }
