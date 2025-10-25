@@ -1,7 +1,10 @@
 package lib
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/paimanbandi/rupiah"
@@ -65,8 +68,7 @@ func Menu(cart *[]cartItem, temps *[]temp) {
 		return
 	}
 	if input > len(foodsMenu) {
-		fmt.Println("Pilihan produk tidak valid")
-		return
+		panic("Pilihan produk tidak valid")
 	}
 
 	chosen := foodsMenu[input-1]
@@ -88,4 +90,14 @@ func Menu(cart *[]cartItem, temps *[]temp) {
 	})
 
 	fmt.Printf("%s x%d ditambahkan ke keranjang.\n", chosen.name, qty)
+	fmt.Print("\n\n1. Pesan lagi \nPress enter to back..")
+	reader := bufio.NewReader(os.Stdin)
+	text, _ := reader.ReadString('\n')
+	text = strings.TrimSpace(text)
+	switch text {
+	case "1":
+		Menu(cart, temps)
+	default:
+		panic("Opsi yang anda masukkan tidak sesuai")
+	}
 }
