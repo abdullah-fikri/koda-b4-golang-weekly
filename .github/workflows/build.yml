@@ -1,0 +1,54 @@
+name: Build Golang App
+run-name: Build Golang App for tagged release
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Build for Windows amd64
+        run: GOOS=windows GOARCH=amd64 go build -o playground_windows_amd64.exe .
+
+      - name: Build for Linux amd64
+        run: GOOS=linux GOARCH=amd64 go build -o playground_linux_amd64 .
+
+      - name: Build for Linux arm64
+        run: GOOS=linux GOARCH=arm64 go build -o playground_linux_arm64 .
+
+      - name: Build for macOS (darwin arm64)
+        run: GOOS=darwin GOARCH=arm64 go build -o playground_darwin_arm64 .
+
+      - name: Upload artifact for Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground_windows_amd64
+          path: ./playground_windows_amd64.exe
+
+      - name: Upload artifact for Linux amd64
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground_linux_amd64
+          path: ./playground_linux_amd64
+
+      - name: Upload artifact for Linux arm64
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground_linux_arm64
+          path: ./playground_linux_arm64
+
+      - name: Upload artifact for macOS
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground_darwin_arm64
+          path: ./playground_darwin_arm64
