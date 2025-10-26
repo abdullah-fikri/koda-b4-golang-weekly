@@ -1,13 +1,18 @@
-name: Build Golang App
-run-name: Build Golang App for tagged release
+name: Build and Release Gacoan POS
+run-name: Build and Release Gacoan POS Application on Tag Push
+
 on:
   push:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -15,40 +20,37 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version: "1.25.3"
+          cache: false
 
-      - name: Build for Windows amd64
-        run: GOOS=windows GOARCH=amd64 go build -o playground_windows_amd64.exe .
+      - name: Build for all platforms
+        run: |
+          mkdir -p dist
+          VERSION=${GITHUB_REF_NAME}
 
-      - name: Build for Linux amd64
-        run: GOOS=linux GOARCH=amd64 go build -o playground_linux_amd64 .
+          echo "🚀 Building version $VERSION..."
 
-      - name: Build for Linux arm64
-        run: GOOS=linux GOARCH=arm64 go build -o playground_linux_arm64 .
+          # Windows
+          GOOS=windows GOARCH=amd64 go build -o dist/Gacoan_${VERSION}_windows_amd64.exe .
 
-      - name: Build for macOS (darwin arm64)
-        run: GOOS=darwin GOARCH=arm64 go build -o playground_darwin_arm64 .
+          # Linux AMD64
+          GOOS=linux GOARCH=amd64 go build -o dist/Gacoan_${VERSION}_linux_amd64 .
 
-      - name: Upload artifact for Windows
-        uses: actions/upload-artifact@v4
+          # Linux ARM64
+          GOOS=linux GOARCH=arm64 go build -o dist/Gacoan_${VERSION}_linux_arm64 .
+
+          # macOS ARM64
+          GOOS=darwin GOARCH=arm64 go build -o dist/Gacoan_${VERSION}_darwin_arm64 .
+
+          echo "Build complete. Files in ./dist"
+
+      - name: List build outputs
+        run: ls -lh dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: playground_windows_amd64
-          path: ./playground_windows_amd64.exe
-
-      - name: Upload artifact for Linux amd64
-        uses: actions/upload-artifact@v4
-        with:
-          name: playground_linux_amd64
-          path: ./playground_linux_amd64
-
-      - name: Upload artifact for Linux arm64
-        uses: actions/upload-artifact@v4
-        with:
-          name: playground_linux_arm64
-          path: ./playground_linux_arm64
-
-      - name: Upload artifact for macOS
-        uses: actions/upload-artifact@v4
-        with:
-          name: playground_darwin_arm64
-          path: ./playground_darwin_arm64
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
