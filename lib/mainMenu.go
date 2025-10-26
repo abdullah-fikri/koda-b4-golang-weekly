@@ -16,7 +16,7 @@ func (c *CartItem) MainMenu() {
 	history := []CartItem{}
 	temps := []temp{}
 	for {
-		fmt.Println("\n\n--- GACOAN DELIVERY ---")
+		fmt.Println("\x1bc--- GACOAN DELIVERY ---")
 		fmt.Println(`
 
 1. Menu Makanan
@@ -26,6 +26,7 @@ func (c *CartItem) MainMenu() {
 
 		fmt.Print("Choose a menu: ")
 		fmt.Scan(&input)
+		fmt.Print("\x1bc")
 
 		switch input {
 		case "1":

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"text/tabwriter"
 	"time"
 
 	"github.com/paimanbandi/rupiah"
@@ -31,11 +32,27 @@ func (c *CartItem) Cart(cart *[]CartItem, history *[]CartItem, temps *[]temp) {
 		fmt.Println("Keranjang kosong.")
 	} else {
 		totalHarga := 0
+
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
+		fmt.Println("============================================================")
+		fmt.Fprintln(w, "No\tMenu\tHarga\tQuantity\tSub Total")
+
 		for i, item := range *temps {
-			fmt.Printf("%d. %s \nHarga: %s \nquantity: %dpcs \nSubTotal: %s\n", i+1, item.name, rupiah.FormatInt64ToRp(int64(item.price)), item.qty, rupiah.FormatInt64ToRp(int64(item.total)))
+			hargaRupiah := rupiah.FormatInt64ToRp(int64(item.price))
+			hargaSubTotalRupiah := rupiah.FormatInt64ToRp(int64(item.total))
+			fmt.Fprintf(w, "%d\t%s\t%s\t%d pcs\t%s\n",
+				i+1,
+				item.name,
+				hargaRupiah,
+				item.qty,
+				hargaSubTotalRupiah,
+			)
 			totalHarga += item.total
 		}
-		fmt.Printf("\nTotal harga:  %s\n", rupiah.FormatInt64ToRp(int64(totalHarga)))
+
+		w.Flush()
+
+		fmt.Printf("\nTotal harga: %s\n", rupiah.FormatInt64ToRp(int64(totalHarga)))
 	}
 
 	fmt.Print("\nBayar Sekarang? (y/n): ")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/paimanbandi/rupiah"
@@ -56,10 +57,16 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 		{name: "Dimsum Ayam", price: 12000},
 	}
 
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
+
+	fmt.Fprintln(w, "No\tMenu\tHarga")
+
 	for i, food := range foodsMenu {
-		hargaRupiah := food.price
-		fmt.Printf("%d. %s - Rp %s\n", i+1, food.name, rupiah.FormatInt64ToRp(int64(hargaRupiah)))
+		hargaRupiah := rupiah.FormatInt64ToRp(int64(food.price))
+		fmt.Fprintf(w, "%d\t%s\t%s\n", i+1, food.name, hargaRupiah)
 	}
+
+	w.Flush()
 
 	fmt.Print("\n\n\n0. Kembali\n\nChoose a product (number): ")
 	fmt.Scan(&input)
