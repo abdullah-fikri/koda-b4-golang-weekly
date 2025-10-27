@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -59,6 +60,13 @@ func fetchData(CacheFile string) []foods {
 	return FoodsMenu
 }
 
+func search(food foods, channel chan foods, wg *sync.WaitGroup, input string) {
+	defer wg.Done()
+	if strings.Contains(strings.ToLower(food.Name), strings.ToLower(input)) {
+		channel <- food
+	}
+}
+
 func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -67,7 +75,7 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 		}
 	}()
 	var input, qty int
-
+	var wg sync.WaitGroup
 	var FoodsMenu []foods
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
@@ -98,18 +106,55 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 	}
 
 	w.Flush()
+	fmt.Println("\n\n99. Cari")
 
 	fmt.Print("\n\n\n0. Kembali\n\nChoose a product (number): ")
 	fmt.Scan(&input)
 
+	switch input {
+	case 0:
+		return
+	case 99:
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("\nMasukkan nama makanan: ")
+		searchInput, _ := reader.ReadString('\n')
+		searchInput = strings.TrimSpace(searchInput)
+
+		channelFoods := make(chan foods, len(FoodsMenu))
+
+		for _, food := range FoodsMenu {
+			wg.Add(1)
+			go search(food, channelFoods, &wg, searchInput)
+		}
+
+		wg.Wait()
+		close(channelFoods)
+
+		wResult := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
+		fmt.Fprintln(wResult, "No\tMenu\tHarga")
+
+		i := 1
+		for result := range channelFoods {
+			harga := rupiah.FormatInt64ToRp(int64(result.Price))
+			fmt.Fprintf(wResult, "%d\t%s\t%s\n", i, result.Name, harga)
+			i++
+		}
+
+		if i == 1 {
+			fmt.Println(" Tidak ada makanan yang cocok.")
+		} else {
+			wResult.Flush()
+		}
+
+		fmt.Println("Choose product (number): ")
+		fmt.Scan(&input)
+	}
 	if input == 0 {
 		return
 	}
 	if input > len(FoodsMenu) {
 		panic("Pilihan produk tidak valid")
 	}
-
-	chosen := FoodsMenu[input-1]
 
 	fmt.Print("\n\n0. Kembali   \nquantity: ")
 	fmt.Scan(&qty)
@@ -119,6 +164,7 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 	if qty < 0 {
 		panic("Quantity harus lebih dari 0")
 	}
+	chosen := FoodsMenu[input-1]
 
 	*temps = append(*temps, temp{
 		name:  chosen.Name,
