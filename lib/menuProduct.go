@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -36,7 +35,7 @@ type temp struct {
 	total int
 }
 
-func fetchData(cacheFile string) []foods {
+func fetchData(CacheFile string) []foods {
 	resp, err := http.Get("https://raw.githubusercontent.com/abdullah-fikri/koda-b4-golang-weekly-data/main/main.json")
 	if err != nil {
 		fmt.Println("failed fetch data")
@@ -45,11 +44,11 @@ func fetchData(cacheFile string) []foods {
 	body, _ := io.ReadAll(resp.Body)
 	var FoodsMenu []foods
 	json.Unmarshal(body, &FoodsMenu)
-	os.WriteFile(cacheFile, body, 0644)
+	os.WriteFile(CacheFile, body, 0644)
 	return FoodsMenu
 }
 
-func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
+func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println(r)
@@ -62,19 +61,18 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
-	cacheFile := filepath.Join(os.TempDir(), "GacoanApp.json")
-	info, err := os.Stat(cacheFile)
+	info, err := os.Stat(CacheFile)
 	if os.IsNotExist(err) {
 		fmt.Println("Cache not found, fetching data...")
-		FoodsMenu = fetchData(cacheFile)
+		FoodsMenu = fetchData(CacheFile)
 	} else {
 		age := time.Since(info.ModTime())
-		if age >= 15*time.Minute {
+		if age >= 15*time.Second {
 			fmt.Println("Cache expired, fetching agin...")
-			FoodsMenu = fetchData(cacheFile)
+			FoodsMenu = fetchData(CacheFile)
 		} else {
 			fmt.Println("used cache...")
-			data, err := os.ReadFile(cacheFile)
+			data, err := os.ReadFile(CacheFile)
 			if err != nil {
 				fmt.Println("NOT reading cache")
 			} else {
@@ -126,7 +124,7 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	text = strings.TrimSpace(text)
 	switch text {
 	case "1":
-		c.Menu(cart, temps)
+		c.Menu(cart, temps, CacheFile)
 	default:
 		panic("Opsi yang anda masukkan tidak sesuai")
 	}
