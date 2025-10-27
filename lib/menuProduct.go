@@ -2,7 +2,10 @@ package lib
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -12,8 +15,8 @@ import (
 )
 
 type foods struct {
-	name  string
-	price int
+	Name  string
+	Price int
 }
 
 type CartItem struct {
@@ -41,29 +44,29 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	}()
 	var input, qty int
 
-	foodsMenu := []foods{
-		{name: "Mie Gacoan Lv.0", price: 15000},
-		{name: "Mie Gacoan Lv.1", price: 15000},
-		{name: "Mie Gacoan Lv.2", price: 15000},
-		{name: "Mie Gacoan Lv.3", price: 15000},
-		{name: "Mie Hompimpa Lv.0", price: 15000},
-		{name: "Mie Hompimpa Lv.1", price: 15000},
-		{name: "Mie Hompimpa Lv.2", price: 15000},
-		{name: "Mie Hompimpa Lv.3", price: 15000},
-		{name: "Air Mineral", price: 6500},
-		{name: "Ice Tea", price: 6500},
-		{name: "Udang Keju", price: 12000},
-		{name: "Udang Rambutan", price: 12000},
-		{name: "Dimsum Ayam", price: 12000},
-	}
+	var FoodsMenu []foods
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
+	resp, err := http.Get("https://raw.githubusercontent.com/abdullah-fikri/koda-b4-golang-weekly-data/refs/heads/main/main.json")
+	if err != nil {
+		fmt.Println("failed fetch data")
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("failed to read body")
+	}
+
+	err = json.Unmarshal(body, &FoodsMenu)
+	if err != nil {
+		fmt.Println("failed parse data")
+	}
 
 	fmt.Fprintln(w, "No\tMenu\tHarga")
 
-	for i, food := range foodsMenu {
-		hargaRupiah := rupiah.FormatInt64ToRp(int64(food.price))
-		fmt.Fprintf(w, "%d\t%s\t%s\n", i+1, food.name, hargaRupiah)
+	for i, food := range FoodsMenu {
+		hargaRupiah := rupiah.FormatInt64ToRp(int64(food.Price))
+		fmt.Fprintf(w, "%d\t%s\t%s\n", i+1, food.Name, hargaRupiah)
 	}
 
 	w.Flush()
@@ -74,11 +77,11 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	if input == 0 {
 		return
 	}
-	if input > len(foodsMenu) {
+	if input > len(FoodsMenu) {
 		panic("Pilihan produk tidak valid")
 	}
 
-	chosen := foodsMenu[input-1]
+	chosen := FoodsMenu[input-1]
 
 	fmt.Print("\n\n0. Kembali   \nquantity: ")
 	fmt.Scan(&qty)
@@ -90,13 +93,13 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	}
 
 	*temps = append(*temps, temp{
-		name:  chosen.name,
-		price: chosen.price,
+		name:  chosen.Name,
+		price: chosen.Price,
 		qty:   qty,
-		total: chosen.price * qty,
+		total: chosen.Price * qty,
 	})
 
-	fmt.Printf("%s x%d ditambahkan ke keranjang.\n", chosen.name, qty)
+	fmt.Printf("%s x%d ditambahkan ke keranjang.\n", chosen.Name, qty)
 	fmt.Print("\n\n1. Pesan lagi \nPress enter to back..")
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
