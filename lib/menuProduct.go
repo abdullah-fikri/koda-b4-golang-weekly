@@ -7,10 +7,12 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/paimanbandi/rupiah"
 )
 
@@ -33,6 +35,15 @@ type temp struct {
 	price int
 	qty   int
 	total int
+}
+
+func defaultTime(key string, defaultValue string) string {
+	godotenv.Load()
+	val, exist := os.LookupEnv(key)
+	if !exist {
+		return defaultValue
+	}
+	return val
 }
 
 func fetchData(CacheFile string) []foods {
@@ -63,15 +74,14 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 
 	info, err := os.Stat(CacheFile)
 	if os.IsNotExist(err) {
-		fmt.Println("Cache not found, fetching data...")
 		FoodsMenu = fetchData(CacheFile)
 	} else {
+		timeDefault, _ := strconv.Atoi(defaultTime("TIMEDEFAULT", "15"))
 		age := time.Since(info.ModTime())
-		if age >= 15*time.Second {
-			fmt.Println("Cache expired, fetching agin...")
+		if age >= time.Duration(timeDefault)*time.Minute {
 			FoodsMenu = fetchData(CacheFile)
+
 		} else {
-			fmt.Println("used cache...")
 			data, err := os.ReadFile(CacheFile)
 			if err != nil {
 				fmt.Println("NOT reading cache")

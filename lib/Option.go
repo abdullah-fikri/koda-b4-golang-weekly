@@ -18,5 +18,4 @@ func Option(CacheFile string) {
 	} else {
 		return
 	}
-
 }
