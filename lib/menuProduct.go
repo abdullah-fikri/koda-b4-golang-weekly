@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -35,6 +36,19 @@ type temp struct {
 	total int
 }
 
+func fetchData(cacheFile string) []foods {
+	resp, err := http.Get("https://raw.githubusercontent.com/abdullah-fikri/koda-b4-golang-weekly-data/main/main.json")
+	if err != nil {
+		fmt.Println("failed fetch data")
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	var FoodsMenu []foods
+	json.Unmarshal(body, &FoodsMenu)
+	os.WriteFile(cacheFile, body, 0644)
+	return FoodsMenu
+}
+
 func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -47,19 +61,26 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	var FoodsMenu []foods
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
-	resp, err := http.Get("https://raw.githubusercontent.com/abdullah-fikri/koda-b4-golang-weekly-data/refs/heads/main/main.json")
-	if err != nil {
-		fmt.Println("failed fetch data")
-	}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("failed to read body")
-	}
+	cacheFile := filepath.Join(os.TempDir(), "GacoanApp.json")
 
-	err = json.Unmarshal(body, &FoodsMenu)
-	if err != nil {
-		fmt.Println("failed parse data")
+	body, err := os.Stat(cacheFile)
+	if os.IsNotExist(err) {
+		fmt.Println("lakukan fetching data.")
+		FoodsMenu = fetchData(cacheFile)
+	} else {
+		fmt.Println("ambil dari cache")
+		FoodsMenu = fetchData(cacheFile)
+		age := time.Since(body.ModTime())
+		if age >= 15*time.Minute {
+			FoodsMenu = fetchData(cacheFile)
+		} else {
+			body, err := os.ReadFile(cacheFile)
+			if err != nil {
+				fmt.Println("gagal baca cache")
+			}
+			json.Unmarshal(body, &FoodsMenu)
+		}
 	}
 
 	fmt.Fprintln(w, "No\tMenu\tHarga")
