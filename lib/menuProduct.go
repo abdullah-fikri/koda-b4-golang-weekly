@@ -63,26 +63,25 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
 	cacheFile := filepath.Join(os.TempDir(), "GacoanApp.json")
-
-	body, err := os.Stat(cacheFile)
+	info, err := os.Stat(cacheFile)
 	if os.IsNotExist(err) {
-		fmt.Println("lakukan fetching data.")
+		fmt.Println("Cache not found, fetching data...")
 		FoodsMenu = fetchData(cacheFile)
 	} else {
-		fmt.Println("ambil dari cache")
-		FoodsMenu = fetchData(cacheFile)
-		age := time.Since(body.ModTime())
+		age := time.Since(info.ModTime())
 		if age >= 15*time.Minute {
+			fmt.Println("Cache expired, fetching agin...")
 			FoodsMenu = fetchData(cacheFile)
 		} else {
-			body, err := os.ReadFile(cacheFile)
+			fmt.Println("used cache...")
+			data, err := os.ReadFile(cacheFile)
 			if err != nil {
-				fmt.Println("gagal baca cache")
+				fmt.Println("NOT reading cache")
+			} else {
+				json.Unmarshal(data, &FoodsMenu)
 			}
-			json.Unmarshal(body, &FoodsMenu)
 		}
 	}
-
 	fmt.Fprintln(w, "No\tMenu\tHarga")
 
 	for i, food := range FoodsMenu {
