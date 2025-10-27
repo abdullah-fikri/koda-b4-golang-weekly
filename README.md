@@ -1,32 +1,78 @@
-# Gacoan — Aplikasi Pemesanan Makanan Berbasis Terminal
+# Gacoan APP
 
-A simple **Golang CLI app** that simulates a food ordering system — inspired by "Mie Gacoan".  
-Users can view menus, add items to a cart, checkout, and see past order history directly in the terminal.
+Aplikasi sederhana pemesanan makanan yang berjalan di terminal / CLI, project ini memuat fitur pesan makanan, keranjang, history dan menu option untuk menghapus data dari temp, aplikasi ini didesain semirip mungkin dengan aplikasi nyata yang sudah ada namun dijalan di atas terminal / CLI
 
----
+## 📸 Preview
 
-## 🚀 Fitur Utama
+<div align="center">
+  <img src="1.png" alt="Screenshot 1" width="200"/>
+  <img src="2.png" alt="Screenshot 2" width="200"/>
 
-✅ **Menu Makanan & Minuman**  
-Tampilkan daftar menu lengkap dengan harga yang diformat otomatis ke rupiah.
+</div>
 
-✅ **Keranjang Belanja (Cart)**  
-Tambah beberapa item, ubah jumlah, dan lihat total harga sebelum checkout.
+<div align="center">
+  <img src="5.png" alt="Screenshot 5" width="200"/>
+  <img src="4.png" alt="Screenshot 4" width="200"/>
+</div>
 
-✅ **Checkout & Invoice**  
-Cetak invoice sederhana dengan ID transaksi dan waktu checkout.
+<div>
+  <img src="3.png" alt="Screenshot 3" width="200"/>
+   <img src="6.png" alt="Screenshot 6" width="200"/>
+</div>
 
-✅ **Riwayat Transaksi (History)**  
-Lihat semua transaksi sebelumnya yang tersimpan di memori selama program berjalan.
+## 🛠️ Tech Stack
 
----
+**Go (Golang)**
+— bahasa pemrograman utama untuk membangun aplikasi
 
-## 🧰 Teknologi yang Digunakan
+**godotenv**
+— untuk membaca dan memuat file .env
 
-- **Golang**
-- **text/tabwriter** — untuk membuat tampilan tabel rapi di terminal
-- **github.com/paimanbandi/rupiah** — untuk format harga ke Rupiah
-- **bufio & os** — untuk membaca input terminal
-- **time & math/rand** — untuk membuat ID pesanan dan waktu transaksi
+**text/tabwriter**
+— untuk menampilkan output tabel di terminal
 
----
+**paimanbandi/rupiah**
+— konversi angka ke format mata uang Rupiah
+
+**Standard Library Go:**
+
+fmt, os, time, bufio, net/http, encoding/json, dll.
+
+**Git** — untuk version control dan kolaborasi
+
+## 🚀 How to Run
+
+1. Clone repository ini
+
+```bash
+   git clone https://github.com/abdullah-fikri/koda-b4-golang-weekly.git
+```
+
+2. Masuk ke directory project
+
+```bash
+   cd koda-b4-golang-weekly
+```
+
+3. Jalankan aplikasi
+
+```bash
+   go run main.go
+```
+
+## 🤝 How to Contribute
+
+Kontribusi selalu diterima! Berikut cara untuk berkontribusi:
+
+1. Fork repository ini
+2. Buat branch baru untuk fitur Anda (`git checkout -b feature/AmazingFeature`)
+3. Commit perubahan Anda (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buat Pull Request
+
+### Aturan Kontribusi
+
+- Pastikan code Anda mengikuti style guide yang ada
+- Tulis commit message yang jelas dan deskriptif
+- Update dokumentasi jika diperlukan
+- Tambahkan tests untuk fitur baru
