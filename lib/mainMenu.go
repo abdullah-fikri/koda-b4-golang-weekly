@@ -25,8 +25,7 @@ func (c *CartItem) MainMenu() {
 1. Menu Makanan
 2. Checkout Makanan
 3. History 
-4. Option
-5. Keluar`)
+4. Keluar`)
 
 		fmt.Print("Choose a menu: ")
 		fmt.Scan(&input)
@@ -39,8 +38,8 @@ func (c *CartItem) MainMenu() {
 			c.Cart(&cart, &history, &temps)
 		case "3":
 			History(&history)
-		case "4":
-			Option(CacheFile)
+		// case "4":
+		// 	Option(CacheFile)
 		case "5":
 			return
 		default:

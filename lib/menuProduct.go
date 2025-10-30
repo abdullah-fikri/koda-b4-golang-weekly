@@ -2,18 +2,17 @@ package lib
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+	"golang-weekly/db"
+
+	// "io"
+	// "net/http"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"text/tabwriter"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/paimanbandi/rupiah"
 )
 
@@ -38,27 +37,27 @@ type temp struct {
 	total int
 }
 
-func defaultTime(key string, defaultValue string) string {
-	godotenv.Load()
-	val, exist := os.LookupEnv(key)
-	if !exist {
-		return defaultValue
-	}
-	return val
-}
+// func defaultTime(key string, defaultValue string) string {
+// 	godotenv.Load()
+// 	val, exist := os.LookupEnv(key)
+// 	if !exist {
+// 		return defaultValue
+// 	}
+// 	return val
+// }
 
-func fetchData(CacheFile string) []foods {
-	resp, err := http.Get("https://raw.githubusercontent.com/abdullah-fikri/koda-b4-golang-weekly-data/main/main.json")
-	if err != nil {
-		fmt.Println("failed fetch data")
-	}
+// func fetchData(CacheFile string) []foods {
+// 	resp, err := http.Get("https://raw.githubusercontent.com/abdullah-fikri/koda-b4-golang-weekly-data/main/main.json")
+// 	if err != nil {
+// 		fmt.Println("failed fetch data")
+// 	}
 
-	body, _ := io.ReadAll(resp.Body)
-	var FoodsMenu []foods
-	json.Unmarshal(body, &FoodsMenu)
-	os.WriteFile(CacheFile, body, 0644)
-	return FoodsMenu
-}
+// 	body, _ := io.ReadAll(resp.Body)
+// 	var FoodsMenu []foods
+// 	json.Unmarshal(body, &FoodsMenu)
+// 	os.WriteFile(CacheFile, body, 0644)
+// 	return FoodsMenu
+// }
 
 func search(food foods, channel chan foods, wg *sync.WaitGroup, input string) {
 	defer wg.Done()
@@ -76,28 +75,28 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 	}()
 	var input, qty int
 	var wg sync.WaitGroup
-	var FoodsMenu []foods
+	FoodsMenu := db.ConnectDb()
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.Debug)
 
-	info, err := os.Stat(CacheFile)
-	if os.IsNotExist(err) {
-		FoodsMenu = fetchData(CacheFile)
-	} else {
-		timeDefault, _ := strconv.Atoi(defaultTime("TIMEDEFAULT", "15"))
-		age := time.Since(info.ModTime())
-		if age >= time.Duration(timeDefault)*time.Minute {
-			FoodsMenu = fetchData(CacheFile)
+	// info, err := os.Stat(CacheFile)
+	// if os.IsNotExist(err) {
+	// 	FoodsMenu = fetchData(CacheFile)
+	// } else {
+	// 	timeDefault, _ := strconv.Atoi(defaultTime("TIMEDEFAULT", "15"))
+	// 	age := time.Since(info.ModTime())
+	// 	if age >= time.Duration(timeDefault)*time.Minute {
+	// 		FoodsMenu = fetchData(CacheFile)
 
-		} else {
-			data, err := os.ReadFile(CacheFile)
-			if err != nil {
-				fmt.Println("NOT reading cache")
-			} else {
-				json.Unmarshal(data, &FoodsMenu)
-			}
-		}
-	}
+	// 	} else {
+	// 		data, err := os.ReadFile(CacheFile)
+	// 		if err != nil {
+	// 			fmt.Println("NOT reading cache")
+	// 		} else {
+	// 			json.Unmarshal(data, &FoodsMenu)
+	// 		}
+	// 	}
+	// }
 	fmt.Fprintln(w, "No\tMenu\tHarga")
 
 	for i, food := range FoodsMenu {
@@ -122,7 +121,11 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 
 		channelFoods := make(chan foods, len(FoodsMenu))
 
-		for _, food := range FoodsMenu {
+		for _, product := range FoodsMenu {
+			food := foods{
+				Name:  product.Name,
+				Price: product.Price,
+			}
 			wg.Add(1)
 			go search(food, channelFoods, &wg, searchInput)
 		}
@@ -141,7 +144,9 @@ func (c *CartItem) Menu(cart *[]CartItem, temps *[]temp, CacheFile string) {
 		}
 
 		if i == 1 {
-			fmt.Println(" Tidak ada makanan yang cocok.")
+			fmt.Println(" Tidak ada makanan yang cocok. \n\n loading....")
+			time.Sleep(2 * time.Second)
+			c.Menu(cart, temps, CacheFile)
 		} else {
 			wResult.Flush()
 		}
